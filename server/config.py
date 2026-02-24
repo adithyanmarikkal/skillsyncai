@@ -1,3 +1,4 @@
 import os
+from dotenv import load_dotenv
 
-GEMINI_API_KEY = "AIzaSyCVVmrVtzy3cb8swKecrq1bkbfxe8LHYB8"
+GEMINI_API_KEY =os.getenv("API_KEY")
