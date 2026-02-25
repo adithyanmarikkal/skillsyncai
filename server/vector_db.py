@@ -26,3 +26,11 @@ def store_embedding(embedding, text_chunk):
             )
         ]
     )
+
+def search_similar(query_embedding, limit=5):
+    results = client.query_points(
+        collection_name=COLLECTION_NAME,
+        query=query_embedding,
+        limit=limit
+    )
+    return results

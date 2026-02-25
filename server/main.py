@@ -1,7 +1,15 @@
 from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
 from resume_parser import extract_text_from_pdf
 from embeddings import generate_embedding
-from vector_db import create_collection, store_embedding
+from vector_db import create_collection, store_embedding , search_similar
+
+
+class JobRequest(BaseModel):
+    job_description: str
+
+class GapRequest(BaseModel):
+    job_description: str
 
 app = FastAPI()
 
@@ -17,6 +25,7 @@ app.add_middleware(
 
 @app.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
+    print("file received")
 
     text = extract_text_from_pdf(file.file)
 
@@ -31,3 +40,28 @@ async def upload_resume(file: UploadFile = File(...)):
         store_embedding(embedding, chunk)
 
     return {"message": "Resume processed and stored successfully"}
+
+@app.post("/match-job")
+async def match_job(req: JobRequest):
+    print("function called")
+    job_embedding = generate_embedding(req.job_description)
+    print("embedding generated")
+    results = search_similar(job_embedding)
+
+    matched_chunks = [
+        {
+            "text": r.payload["text"],
+            "score": float(r.score)
+        }
+        for r in results.points
+    ]
+
+    avg_score = sum(r["score"] for r in matched_chunks) / len(matched_chunks)
+
+    match_percentage = round(avg_score * 100, 2)
+
+    return {
+        "match_percentage": match_percentage,
+        "top_matches": matched_chunks
+    }
+
