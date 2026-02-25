@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from resume_parser import extract_text_from_pdf
 from embeddings import generate_embedding
 from vector_db import create_collection, store_embedding , search_similar
+from gap_detector import detect_gaps
 
 
 class JobRequest(BaseModel):
@@ -65,3 +66,7 @@ async def match_job(req: JobRequest):
         "top_matches": matched_chunks
     }
 
+@app.post("/semantic-gap")
+async def semantic_gap(req: GapRequest):
+    matched, missing = detect_gaps(req.job_description)
+    return {"matched": matched, "missing": missing}
