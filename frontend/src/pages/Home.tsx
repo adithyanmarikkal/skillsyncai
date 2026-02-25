@@ -1,6 +1,7 @@
 import ResumeUpload from "../components/ResumeUpload";
 import JobMatcher from "../components/JobMatcher"
 import GapAnalysis from "../components/GapAnalysis";
+import Roadmap from "../components/Roadmap";
 
 const Home = () => {
   return (
@@ -9,6 +10,7 @@ const Home = () => {
       <ResumeUpload />
       <JobMatcher />
       <GapAnalysis />
+      <Roadmap />
     </div>
   );
 };

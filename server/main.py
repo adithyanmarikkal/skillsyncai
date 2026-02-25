@@ -4,6 +4,7 @@ from resume_parser import extract_text_from_pdf
 from embeddings import generate_embedding
 from vector_db import create_collection, store_embedding , search_similar
 from gap_detector import detect_gaps
+from roadmap_generator import generate_roadmap
 
 
 class JobRequest(BaseModel):
@@ -70,3 +71,25 @@ async def match_job(req: JobRequest):
 async def semantic_gap(req: GapRequest):
     matched, missing = detect_gaps(req.job_description)
     return {"matched": matched, "missing": missing}
+
+
+class RoadmapRequest(BaseModel):
+    job_description: str
+
+@app.post("/generate-roadmap")
+async def generate_learning_roadmap(req: RoadmapRequest):
+
+    matched, missing = detect_gaps(req.job_description)
+
+    if not missing:
+        return {"message": "No major skill gaps found!"}
+
+    roadmap = generate_roadmap(
+        job_role=req.job_description,
+        missing_skills=missing
+    )
+
+    return {
+        "missing_skills": missing,
+        "roadmap": roadmap
+    }
