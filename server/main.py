@@ -93,3 +93,29 @@ async def generate_learning_roadmap(req: RoadmapRequest):
         "missing_skills": missing,
         "roadmap": roadmap
     }
+
+class AnalyzeRequest(BaseModel):
+    job_description: str
+@app.post("/analyze")
+async def analyze(req: AnalyzeRequest):
+    # Compute match score inline (same logic as /match-job)
+    job_embedding = generate_embedding(req.job_description)
+    results = search_similar(job_embedding)
+    matched_chunks = [
+        {"text": r.payload["text"], "score": float(r.score)} for r in results.points
+    ]
+    avg_score = (
+        sum(r["score"] for r in matched_chunks) / len(matched_chunks)
+        if matched_chunks
+        else 0
+    )
+    match_score = round(avg_score * 100, 2)
+
+    matched_skills, missing = detect_gaps(req.job_description)
+    roadmap = generate_roadmap(job_role=req.job_description, missing_skills=missing)
+    return {
+        "match_score": match_score,
+        "matched_skills": matched_skills,
+        "missing_skills": missing,
+        "roadmap": roadmap,
+    }
