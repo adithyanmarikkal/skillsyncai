@@ -8,6 +8,11 @@ load_dotenv()
 
 DATABASE_URL = getenv("DATABASE_URL")
 
+if not DATABASE_URL:
+    raise ValueError(
+        "DATABASE_URL environment variable is not set. Check your .env file or Docker environment."
+    )
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
