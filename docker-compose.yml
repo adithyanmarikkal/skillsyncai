@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:15
+    container_name: skillsync_db
+    restart: always
+    environment:
+      POSTGRES_USER: skillsync_user
+      POSTGRES_PASSWORD: skillsync_pass
+      POSTGRES_DB: skillsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U skillsync_user -d skillsync" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./server
+    container_name: skillsync_backend
+    restart: always
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE_URL: postgresql://skillsync_user:skillsync_pass@db:5432/skillsync
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: skillsync_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:

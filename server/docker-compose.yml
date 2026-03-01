@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15
+    container_name: skillsync_db
+    restart: always
+    environment:
+      POSTGRES_USER: skillsync_user
+      POSTGRES_PASSWORD: skillsync_pass
+      POSTGRES_DB: skillsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: skillsync_backend
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://skillsync_user:skillsync_pass@db:5432/skillsync
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
